@@ -1,0 +1,884 @@
+@font-face {
+  font-family: "Dela Gothic One";
+  src: url("/assets/fonts/DelaGothicOne-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans Egyptian Hieroglyphs";
+  src: url("/assets/fonts/NotoSansEgyptianHieroglyphs-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Dot Gothic 16";
+  src: url("/assets/fonts/DotGothic16-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background, #050505);
+  color: var(--color-foreground, #f0f0ea);
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-background, #050505);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+body.lyrics-open {
+  overflow: hidden;
+}
+
+body.lyrics-open .site-header,
+body.lyrics-open .release-arrow {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+button,
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+}
+
+a {
+  text-decoration: none;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.site-header {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: 1fr minmax(14rem, auto) 1fr;
+  align-items: center;
+  width: 100%;
+  min-height: 78px;
+  padding: 16px 28px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-foreground) 42%, transparent);
+  background: color-mix(in srgb, var(--color-background) 82%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-family: "Dela Gothic One", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.site-header__brand {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  justify-self: start;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: clamp(0.92rem, 1.3vw, 1.18rem);
+  font-weight: 400;
+  letter-spacing: 0.055em;
+}
+
+.site-header__brand img {
+  width: clamp(28px, 2.6vw, 38px);
+  height: auto;
+  filter: invert(1);
+}
+
+.site-header__release {
+  overflow: hidden;
+  justify-self: center;
+  max-width: min(44vw, 660px);
+  font-size: clamp(0.72rem, 1vw, 0.96rem);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-header__language {
+  justify-self: end;
+  padding: 10px 12px;
+  border: 1px solid currentColor;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.site-header__language:hover,
+.site-header__language:focus-visible {
+  background: var(--color-foreground);
+  color: var(--color-background);
+  outline: none;
+}
+
+.release-arrow {
+  position: fixed;
+  z-index: 90;
+  top: 50%;
+  display: grid;
+  width: clamp(54px, 4.7vw, 82px);
+  aspect-ratio: 1;
+  place-items: center;
+  translate: 0 -50%;
+  border: 0;
+  background: transparent;
+  transition: opacity 160ms ease;
+}
+
+.release-arrow img {
+  width: 58%;
+  height: auto;
+  filter: invert(1);
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.release-arrow--previous {
+  left: 0;
+}
+
+.release-arrow--previous img {
+  transform: rotate(90deg);
+}
+
+.release-arrow--next {
+  right: 0;
+}
+
+.release-arrow--next img {
+  transform: rotate(-90deg);
+}
+
+a.release-arrow:hover,
+a.release-arrow:focus-visible {
+  outline: none;
+  opacity: 0.72;
+}
+
+a.release-arrow:hover img,
+a.release-arrow:focus-visible img {
+  filter: invert(1);
+}
+
+.release-arrow.is-disabled {
+  opacity: 0.22;
+}
+
+.release-hero {
+  --release-cover: none;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100svh;
+  overflow: hidden;
+  align-items: stretch;
+  padding-top: 78px;
+  background: #050505;
+}
+
+.release-hero::before {
+  position: absolute;
+  z-index: -3;
+  inset: 0;
+  background-image: var(--release-cover);
+  background-position: center;
+  background-size: cover;
+  content: "";
+  filter: grayscale(1) contrast(1.12);
+  opacity: 0.32;
+  transform: scale(1.025);
+}
+
+.release-hero::after {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 45%, transparent 0, rgba(0, 0, 0, 0.22) 42%, rgba(0, 0, 0, 0.86) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15), #050505 98%);
+  content: "";
+}
+
+.release-hero__grain {
+  position: absolute;
+  z-index: -1;
+  inset: -50%;
+  background-image: repeating-radial-gradient(circle at 30% 20%, rgba(255,255,255,.09) 0 1px, transparent 1px 4px);
+  background-size: 8px 8px;
+  mix-blend-mode: overlay;
+  opacity: 0.14;
+  pointer-events: none;
+  transform: rotate(9deg);
+}
+
+.release-hero__heading {
+  position: absolute;
+  z-index: 4;
+  top: 112px;
+  left: clamp(24px, 8vw, 154px);
+  width: min(55vw, 950px);
+  pointer-events: none;
+}
+
+.release-hero__heading p,
+.section-heading span,
+.lyrics-modal__content > p {
+  margin: 0 0 12px;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.release-hero__heading h1 {
+  margin: 0;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(2.4rem, 7vw, 8.2rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  opacity: 0.9;
+}
+
+.release-hero__index {
+  position: absolute;
+  z-index: 3;
+  right: clamp(22px, 7vw, 140px);
+  bottom: 28px;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+}
+
+.experience {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  width: 100%;
+  min-height: calc(100svh - 78px);
+  place-items: center;
+}
+
+.experience__canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(84vw, 1032px);
+  height: min(89svh, 864px);
+  translate: -50% -48%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.experience__canvas:active {
+  cursor: grabbing;
+}
+
+.experience__hint {
+  position: absolute;
+  top: clamp(185px, 25vh, 278px);
+  right: clamp(24px, 8vw, 152px);
+  width: 11rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.track-selector {
+  position: absolute;
+  bottom: clamp(52px, 7vh, 88px);
+  left: 50%;
+  display: grid;
+  grid-template-columns: 52px minmax(220px, 390px) 52px;
+  gap: 6px;
+  width: min(calc(100% - 150px), 520px);
+  translate: -50% 0;
+}
+
+.track-selector > button {
+  min-height: 52px;
+  border: 1px solid color-mix(in srgb, var(--color-foreground) 62%, transparent);
+  background: color-mix(in srgb, var(--color-background) 78%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+.track-selector > button:hover,
+.track-selector > button:focus-visible {
+  border-color: var(--color-foreground);
+  background: color-mix(in srgb, var(--color-foreground) 12%, var(--color-background));
+  outline: none;
+}
+
+.track-selector__current {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.track-selector__current span {
+  grid-row: 1 / span 2;
+  margin-right: 14px;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+}
+
+.track-selector__current strong {
+  overflow: hidden;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(0.72rem, 1.1vw, 0.92rem);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-selector__current small {
+  margin-top: 4px;
+  color: var(--color-muted);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+}
+
+.lyrics-modal {
+  position: fixed;
+  z-index: 500;
+  inset: 0;
+  overflow: auto;
+  background:
+    linear-gradient(rgba(5, 5, 5, 0.97), rgba(5, 5, 5, 0.97)),
+    var(--release-cover, none);
+  color: var(--color-foreground);
+  animation: modal-in 240ms ease both;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lyrics-modal__topbar {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 28px;
+  border-bottom: 1px solid #3f3f3b;
+  background: rgba(5, 5, 5, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--color-muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+}
+
+.lyrics-modal__topbar button {
+  border: 0;
+  background: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.lyrics-modal__body {
+  display: grid;
+  grid-template-columns: minmax(0, 760px) auto;
+  gap: clamp(36px, 7vw, 110px);
+  align-items: start;
+  width: min(calc(100% - 48px), 1040px);
+  margin: 0 auto;
+}
+
+.lyrics-modal__content {
+  width: 100%;
+  margin: 0;
+  padding: clamp(62px, 10vw, 132px) 0 140px;
+}
+
+.lyrics-modal__content h2 {
+  max-width: 700px;
+  margin: 0 0 clamp(54px, 8vw, 100px);
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(2.1rem, 7vw, 6.2rem);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.lyrics-modal__text {
+  white-space: pre-line;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: clamp(1.04rem, 2vw, 1.32rem);
+  line-height: 1.72;
+}
+
+html[lang="ru"] .lyrics-modal__text {
+  letter-spacing: -0.045em;
+}
+
+.egyptian-term {
+  display: inline-grid;
+  min-width: 5.8em;
+  margin: 0 0.12em;
+  padding: 0;
+  vertical-align: -0.3em;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.egyptian-term__glyphs,
+.egyptian-term__label {
+  grid-area: 1 / 1;
+  place-self: center;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.egyptian-term__glyphs {
+  font-family: "Noto Sans Egyptian Hieroglyphs", sans-serif;
+  font-size: 1.65em;
+  line-height: 1;
+}
+
+.egyptian-term__label {
+  display: grid;
+  min-width: 100%;
+  min-height: 2em;
+  padding: 0.16em 0.5em;
+  place-items: center;
+  background: #f3f3ed;
+  color: #090909;
+  font-size: 0.78em;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0;
+  transform: scaleX(0.82);
+}
+
+.egyptian-term:hover .egyptian-term__glyphs,
+.egyptian-term:focus .egyptian-term__glyphs,
+.egyptian-term.is-revealed .egyptian-term__glyphs {
+  opacity: 0.12;
+}
+
+.egyptian-term:hover .egyptian-term__label,
+.egyptian-term:focus .egyptian-term__label,
+.egyptian-term.is-revealed .egyptian-term__label {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.lyrics-modal__pager {
+  position: sticky;
+  z-index: 3;
+  top: calc(50vh - 24px);
+  display: flex;
+  gap: 6px;
+  align-self: start;
+  margin-top: clamp(80px, 16vh, 170px);
+}
+
+.lyrics-modal__pager button {
+  display: grid;
+  width: 48px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--color-foreground);
+  background: var(--color-background);
+  cursor: pointer;
+}
+
+.lyrics-modal__pager img {
+  width: 58%;
+  height: auto;
+  filter: invert(1);
+}
+
+.lyrics-modal__pager button:first-child img {
+  transform: rotate(90deg);
+}
+
+.lyrics-modal__pager button:last-child img {
+  transform: rotate(-90deg);
+}
+
+.content-section {
+  position: relative;
+  padding: clamp(80px, 10vw, 160px) clamp(74px, 11vw, 210px);
+  border-top: 1px solid #33332f;
+  background: var(--color-background);
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: baseline;
+  margin-bottom: clamp(38px, 6vw, 78px);
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(2.5rem, 8vw, 8rem);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.video-frame,
+.video-placeholder {
+  display: block;
+  width: min(100%, 1280px);
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  border: 1px solid #555550;
+}
+
+.video-frame {
+  background: #000;
+}
+
+.video-placeholder {
+  position: relative;
+  overflow: hidden;
+  background-image:
+    linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.75)),
+    var(--release-cover);
+  background-position: center;
+  background-size: cover;
+}
+
+.video-placeholder::after {
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  content: "";
+}
+
+.video-placeholder__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: clamp(72px, 9vw, 126px);
+  aspect-ratio: 1;
+  place-items: center;
+  translate: -50% -50%;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+}
+
+.video-placeholder p {
+  position: absolute;
+  right: 30px;
+  bottom: 24px;
+  left: 30px;
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid #555550;
+}
+
+.service-link {
+  position: relative;
+  display: grid;
+  min-height: 152px;
+  padding: 26px;
+  border: 0;
+  border-right: 1px solid #555550;
+  border-bottom: 1px solid #555550;
+  background: transparent;
+  color: var(--color-foreground);
+  text-align: left;
+  text-decoration: none;
+}
+
+.service-link:nth-child(even) {
+  border-right: 0;
+}
+
+.service-link span {
+  align-self: start;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(1.1rem, 2.1vw, 2rem);
+}
+
+.service-link small {
+  align-self: end;
+  color: var(--color-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+}
+
+.service-link b {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  color: var(--color-muted);
+}
+
+.site-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: end;
+  min-height: 330px;
+  padding: 72px clamp(74px, 11vw, 210px);
+  border-top: 1px solid #555550;
+  background: #d0d0c9;
+  color: #090909;
+}
+
+.site-footer p {
+  margin: 0 0 12px;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(2rem, 5vw, 5rem);
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+}
+
+.site-footer span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.site-footer__socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 22px;
+}
+
+@media (max-width: 760px) {
+  .site-header {
+    grid-template-columns: 1fr auto;
+    min-height: 68px;
+    padding: 12px 16px;
+  }
+
+  .site-header__release {
+    display: none;
+  }
+
+  .site-header__language {
+    padding: 8px;
+    font-size: 0.72rem;
+  }
+
+  .site-header__brand {
+    gap: 7px;
+    font-size: 0.88rem;
+  }
+
+  .site-header__brand img {
+    width: 27px;
+  }
+
+  .release-arrow {
+    top: 48%;
+    width: 46px;
+  }
+
+  .release-hero {
+    padding-top: 68px;
+  }
+
+  .release-hero__heading {
+    top: 94px;
+    left: 20px;
+    width: calc(100% - 40px);
+  }
+
+  .release-hero__heading h1 {
+    font-size: clamp(2.1rem, 13vw, 4.6rem);
+  }
+
+  .experience {
+    min-height: calc(100svh - 68px);
+  }
+
+  .experience__hint {
+    display: none;
+  }
+
+  .experience__canvas {
+    width: calc(100% - 84px);
+    height: min(68svh, 620px);
+    translate: -50% -44%;
+  }
+
+  .track-selector {
+    bottom: 54px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    width: calc(100% - 112px);
+  }
+
+  .track-selector__current {
+    grid-template-columns: 1fr;
+    padding: 8px 10px;
+  }
+
+  .track-selector__current span {
+    display: none;
+  }
+
+  .track-selector__current strong {
+    grid-column: 1;
+    font-size: 0.65rem;
+  }
+
+  .track-selector__current small {
+    grid-column: 1;
+  }
+
+  .release-hero__index {
+    right: 18px;
+    bottom: 18px;
+  }
+
+  .lyrics-modal__topbar {
+    padding: 18px;
+  }
+
+  .lyrics-modal__content {
+    width: 100%;
+    padding-top: 56px;
+  }
+
+  .lyrics-modal__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: calc(100% - 40px);
+  }
+
+  .lyrics-modal__content h2 {
+    margin-bottom: 50px;
+    font-size: clamp(2rem, 12vw, 4.2rem);
+  }
+
+  .lyrics-modal__pager {
+    top: 72px;
+    order: -1;
+    justify-content: flex-end;
+    width: 100%;
+    margin: 0 0 -72px;
+    padding: 12px 0;
+    background: linear-gradient(180deg, rgba(5, 5, 5, 0.96), rgba(5, 5, 5, 0));
+  }
+
+  .content-section {
+    padding: 76px 22px;
+  }
+
+  .section-heading {
+    grid-template-columns: 32px 1fr;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(2.5rem, 16vw, 5rem);
+  }
+
+  .video-placeholder::after {
+    inset: 8px;
+  }
+
+  .video-placeholder p {
+    right: 18px;
+    bottom: 14px;
+    left: 18px;
+    font-size: 0.52rem;
+  }
+
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-link,
+  .service-link:nth-child(even) {
+    min-height: 116px;
+    padding: 20px;
+    border-right: 0;
+  }
+
+  .site-footer {
+    grid-template-columns: 1fr;
+    gap: 64px;
+    min-height: 360px;
+    padding: 64px 22px 40px;
+  }
+
+  .site-footer__socials {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "canvasSize": 4096,
+  "model": "public\\assets\\releases\\tvar-zhret-tvar\\envelope.glb",
+  "templates": [
+    {
+      "mesh": "body",
+      "triangles": 218,
+      "uvBounds": {
+        "uMin": -2.1437980279870317e-9,
+        "uMax": 0.9999999403953552,
+        "vMin": 5.960464477539063e-8,
+        "vMax": 1
+      },
+      "svg": "body_uv.svg",
+      "png": "body_uv_4096.png",
+      "artworkTemplate": {
+        "width": 2899,
+        "height": 4096,
+        "svg": "body_artwork_template.svg",
+        "png": "body_artwork_template.png"
+      }
+    },
+    {
+      "mesh": "valve",
+      "triangles": 92,
+      "uvBounds": {
+        "uMin": 2.451436165173959e-9,
+        "uMax": 0.2747717797756195,
+        "vMin": 0,
+        "vMax": 1
+      },
+      "svg": "valve_uv.svg",
+      "png": "valve_uv_4096.png",
+      "artworkTemplate": {
+        "width": 4096,
+        "height": 558,
+        "svg": "valve_artwork_template.svg",
+        "png": "valve_artwork_template.png"
+      }
+    },
+    {
+      "mesh": "paper",
+      "triangles": 2,
+      "uvBounds": {
+        "uMin": 0,
+        "uMax": 0.8881596326828003,
+        "vMin": 0,
+        "vMax": 1
+      },
+      "svg": "paper_uv.svg",
+      "png": "paper_uv_4096.png",
+      "artworkTemplate": {
+        "width": 3638,
+        "height": 4096,
+        "svg": "paper_artwork_template.svg",
+        "png": "paper_artwork_template.png"
+      }
+    }
+  ]
+}

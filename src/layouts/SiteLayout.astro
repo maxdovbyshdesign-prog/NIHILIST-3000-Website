@@ -1,0 +1,46 @@
+---
+import "../styles/global.css";
+
+type Props = {
+  title: string;
+  description: string;
+  lang: "ru" | "en";
+  theme: {
+    background: string;
+    foreground: string;
+    muted: string;
+    accent: string;
+  };
+};
+
+const { title, description, lang, theme } = Astro.props;
+const themeStyle = `--color-background:${theme.background};--color-foreground:${theme.foreground};--color-muted:${theme.muted};--color-accent:${theme.accent}`;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={theme.background} />
+    <link
+      rel="preload"
+      href="/assets/fonts/DelaGothicOne-Regular.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href="/assets/fonts/DotGothic16-Regular.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin="anonymous"
+    />
+    <title>{title}</title>
+  </head>
+  <body style={themeStyle}>
+    <slot />
+  </body>
+</html>

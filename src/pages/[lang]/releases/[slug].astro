@@ -1,0 +1,154 @@
+---
+import ReleaseExperience from "../../../components/ReleaseExperience";
+import { getReleaseNeighbors, releases, type Language } from "../../../content/releases";
+import SiteLayout from "../../../layouts/SiteLayout.astro";
+
+export function getStaticPaths() {
+  return releases.flatMap((release) =>
+    (["ru", "en"] as Language[]).map((lang) => ({
+      params: { lang, slug: release.slug },
+      props: { lang, release },
+    })),
+  );
+}
+
+const { lang, release } = Astro.props;
+const copy = release.copy[lang as Language];
+const alternateLanguage: Language = lang === "ru" ? "en" : "ru";
+const neighbors = getReleaseNeighbors(release.slug);
+const description = `${release.artist} — ${copy.title}`;
+---
+
+<SiteLayout title={`${release.artist} — ${copy.title}`} description={description} lang={lang} theme={release.theme}>
+  <header class="site-header">
+    <a class="site-header__brand" href={`/${lang}/releases/${release.slug}`} aria-label="NIHILIST3000 home">
+      <img src="/assets/ui/nihilist-mark.png" alt="" width="4000" height="4000" />
+      <span>NIHILIST3000</span>
+    </a>
+    <span class="site-header__release">{copy.title}</span>
+    <a
+      class="site-header__language"
+      href={`/${alternateLanguage}/releases/${release.slug}`}
+      data-language-choice={alternateLanguage}
+      aria-label={`Switch to ${alternateLanguage === "ru" ? "Russian" : "English"}`}
+    >
+      {lang === "ru" ? "RU / EN" : "EN / RU"}
+    </a>
+  </header>
+
+  <nav class="release-navigation" aria-label="Release navigation">
+    {
+      neighbors.previous ? (
+        <a
+          class="release-arrow release-arrow--previous"
+          href={`/${lang}/releases/${neighbors.previous.slug}`}
+          aria-label={copy.previousRelease}
+        >
+          <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+        </a>
+      ) : (
+        <span class="release-arrow release-arrow--previous is-disabled" aria-hidden="true">
+          <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+        </span>
+      )
+    }
+    {
+      neighbors.next ? (
+        <a
+          class="release-arrow release-arrow--next"
+          href={`/${lang}/releases/${neighbors.next.slug}`}
+          aria-label={copy.nextRelease}
+        >
+          <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+        </a>
+      ) : (
+        <span class="release-arrow release-arrow--next is-disabled" aria-hidden="true">
+          <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+        </span>
+      )
+    }
+  </nav>
+
+  <main>
+    <section class="release-hero" style={`--release-cover: url('${release.cover}')`}>
+      <div class="release-hero__grain"></div>
+      <div class="release-hero__heading">
+        <p>{copy.eyebrow}</p>
+        <h1>{copy.title}</h1>
+      </div>
+      <ReleaseExperience
+        client:load
+        modelUrl={release.model}
+        textureUrl={release.envelopeTexture}
+        tracks={copy.tracks}
+        hint={copy.interactionHint}
+        closeText={copy.closeText}
+      />
+      <span class="release-hero__index">001 / {String(releases.length).padStart(3, "0")}</span>
+    </section>
+
+    <section class="content-section video-section" aria-labelledby="video-title">
+      <div class="section-heading">
+        <span>01</span>
+        <h2 id="video-title">{copy.videoLabel}</h2>
+      </div>
+      {
+        release.videoId ? (
+          <iframe
+            class="video-frame"
+            src={`https://www.youtube-nocookie.com/embed/${release.videoId}`}
+            title={`${release.artist} — ${copy.title}`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          />
+        ) : (
+          <div class="video-placeholder" style={`--release-cover: url('${release.cover}')`}>
+            <span class="video-placeholder__play">▶</span>
+            <p>{copy.videoPending}</p>
+          </div>
+        )
+      }
+    </section>
+
+    <section class="content-section services-section" aria-labelledby="services-title">
+      <div class="section-heading">
+        <span>02</span>
+        <h2 id="services-title">{copy.servicesLabel}</h2>
+      </div>
+      <div class="service-grid">
+        {release.services.map((service) => (
+          <a
+            class="service-link"
+            href={service.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>{service.name}</span>
+            <small>{copy.servicesPending}</small>
+            <b>↗</b>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <p>NIHILIST3000</p>
+      <span>© {new Date().getFullYear()}</span>
+    </div>
+    <div class="site-footer__socials" aria-label={copy.socialsLabel}>
+      {release.socials.map((social) => <span>{social} ↗</span>)}
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll<HTMLElement>("[data-language-choice]").forEach((link) => {
+      link.addEventListener("click", () => {
+        const language = link.dataset.languageChoice;
+        if (language) localStorage.setItem("nihilist3000-language", language);
+      });
+    });
+  </script>
+</SiteLayout>

@@ -1,0 +1,25 @@
+---
+import { releases } from "../content/releases";
+
+const firstRelease = releases[0];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>NIHILIST3000</title>
+    <style>html,body{margin:0;background:#050505;color:#f0f0ea}</style>
+    <script is:inline define:vars={{ slug: firstRelease.slug }}>
+      const remembered = localStorage.getItem("nihilist3000-language");
+      const preferred = navigator.languages?.[0] || navigator.language || "en";
+      const language = remembered === "ru" || remembered === "en"
+        ? remembered
+        : preferred.toLowerCase().startsWith("ru") ? "ru" : "en";
+      location.replace(`/${language}/releases/${slug}`);
+    </script>
+  </head>
+  <body></body>
+</html>
