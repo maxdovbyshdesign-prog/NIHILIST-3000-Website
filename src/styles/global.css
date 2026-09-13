@@ -52,8 +52,13 @@ body.lyrics-open {
   overflow: hidden;
 }
 
+body.age-gate-open {
+  overflow: hidden;
+}
+
 body.lyrics-open .site-header,
-body.lyrics-open .release-arrow {
+body.lyrics-open .release-arrow,
+body.lyrics-open .release-hero__listen {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
@@ -82,6 +87,104 @@ a {
   clip: rect(0, 0, 0, 0) !important;
   white-space: nowrap !important;
   border: 0 !important;
+}
+
+.age-gate {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 24px;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.08), transparent 34%),
+    #050505;
+  color: #f0f0ea;
+}
+
+.age-gate[hidden],
+[data-age-gate-prompt][hidden],
+.age-gate__denied[hidden] {
+  display: none;
+}
+
+.age-gate__panel {
+  width: min(680px, 100%);
+  padding: clamp(28px, 5vw, 58px);
+  border: 1px solid rgba(240, 240, 234, 0.58);
+  background: rgba(5, 5, 5, 0.88);
+}
+
+.age-gate__eyebrow {
+  display: block;
+  margin-bottom: 24px;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+}
+
+.age-gate__mark {
+  display: block;
+  margin: 0 0 clamp(28px, 5vw, 52px);
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(6rem, 20vw, 13rem);
+  font-weight: 400;
+  letter-spacing: -0.09em;
+  line-height: 0.66;
+}
+
+.age-gate h1,
+.age-gate h2 {
+  max-width: 14em;
+  margin: 0 0 14px;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: clamp(1.45rem, 4vw, 2.7rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.age-gate p {
+  max-width: 44em;
+  margin: 0;
+  color: #a8a8a2;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: clamp(0.8rem, 1.4vw, 0.98rem);
+  letter-spacing: 0.055em;
+  line-height: 1.55;
+}
+
+.age-gate__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: clamp(30px, 5vw, 48px);
+}
+
+.age-gate__actions button {
+  min-height: 58px;
+  padding: 14px 18px;
+  border: 1px solid #f0f0ea;
+  background: transparent;
+  color: #f0f0ea;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.age-gate__actions button:hover,
+.age-gate__actions button:focus-visible {
+  background: #f0f0ea;
+  color: #050505;
+  outline: none;
+}
+
+.age-gate__denied {
+  min-height: 360px;
 }
 
 .site-header {
@@ -181,7 +284,7 @@ a {
   right: 0;
 }
 
-.release-arrow--next img {
+.release-arrow--next > img {
   transform: rotate(-90deg);
 }
 
@@ -196,12 +299,70 @@ a.release-arrow:focus-visible img {
   filter: invert(1);
 }
 
-.release-arrow.is-disabled {
-  opacity: 0.22;
+.release-arrow--teaser {
+  opacity: 0.3;
+  outline: none;
+}
+
+.release-arrow--teaser .release-arrow__icon {
+  transition: opacity 180ms ease;
+}
+
+.release-arrow__preview {
+  position: absolute;
+  top: 50%;
+  right: clamp(8px, 1vw, 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  width: min(260px, 42vw);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.release-arrow__preview img {
+  width: clamp(38px, 3.3vw, 48px);
+  height: auto;
+  filter: invert(1);
+}
+
+.release-arrow__preview span {
+  font-family: "Dot Gothic 16", monospace;
+  font-size: clamp(0.62rem, 0.85vw, 0.78rem);
+  letter-spacing: 0.12em;
+  line-height: 1.45;
+  text-align: right;
+  text-transform: uppercase;
+  white-space: pre-line;
+}
+
+.release-arrow--teaser:hover,
+.release-arrow--teaser:focus,
+.release-arrow--teaser:focus-visible {
+  opacity: 1;
+}
+
+.release-arrow--teaser:hover .release-arrow__icon,
+.release-arrow--teaser:focus .release-arrow__icon,
+.release-arrow--teaser:focus-visible .release-arrow__icon {
+  opacity: 0;
+}
+
+.release-arrow--teaser:hover .release-arrow__preview,
+.release-arrow--teaser:focus .release-arrow__preview,
+.release-arrow--teaser:focus-visible .release-arrow__preview {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 .release-hero {
   --release-cover: none;
+  /* Closed envelope top, based on the desktop camera and canvas placement. */
+  --release-envelope-rest-top: calc(39px + 17.4svh);
   position: relative;
   isolation: isolate;
   display: grid;
@@ -250,7 +411,7 @@ a.release-arrow:focus-visible img {
 .release-hero__heading {
   position: absolute;
   z-index: 4;
-  top: 112px;
+  top: var(--release-envelope-rest-top);
   left: clamp(24px, 8vw, 154px);
   width: min(55vw, 950px);
   pointer-events: none;
@@ -268,12 +429,51 @@ a.release-arrow:focus-visible img {
 
 .release-hero__heading h1 {
   margin: 0;
+  white-space: pre-line;
   font-family: "Dela Gothic One", sans-serif;
   font-size: clamp(2.4rem, 7vw, 8.2rem);
   font-weight: 400;
   letter-spacing: -0.055em;
   line-height: 0.9;
   opacity: 0.9;
+}
+
+.release-hero__heading--stacked {
+  left: clamp(24px, 4vw, 80px);
+}
+
+.release-hero__heading--stacked h1 {
+  font-size: clamp(2.4rem, 4.3vw, 7rem);
+}
+
+.release-hero__listen {
+  position: absolute;
+  z-index: 6;
+  bottom: clamp(54px, 8vh, 92px);
+  left: clamp(24px, 8vw, 154px);
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  width: max-content;
+  color: var(--color-foreground);
+  font-family: "Dot Gothic 16", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  opacity: 0.28;
+  transition: opacity 160ms ease;
+}
+
+.release-hero__listen img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: invert(1);
+}
+
+.release-hero__listen:hover,
+.release-hero__listen:focus-visible {
+  outline: none;
+  opacity: 1;
 }
 
 .release-hero__index {
@@ -312,9 +512,9 @@ a.release-arrow:focus-visible img {
 
 .experience__hint {
   position: absolute;
-  top: clamp(185px, 25vh, 278px);
-  right: clamp(24px, 8vw, 152px);
-  width: 11rem;
+  top: calc(var(--release-envelope-rest-top) - 78px + 36px);
+  right: clamp(20px, 2vw, 40px);
+  width: 176px;
   margin: 0;
   color: var(--color-muted);
   font-size: 0.64rem;
@@ -386,7 +586,9 @@ a.release-arrow:focus-visible img {
   position: fixed;
   z-index: 500;
   inset: 0;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background:
     linear-gradient(rgba(5, 5, 5, 0.97), rgba(5, 5, 5, 0.97)),
     var(--release-cover, none);
@@ -400,10 +602,10 @@ a.release-arrow:focus-visible img {
 }
 
 .lyrics-modal__topbar {
-  position: sticky;
+  position: relative;
   z-index: 2;
-  top: 0;
   display: flex;
+  flex: none;
   justify-content: space-between;
   padding: 22px 28px;
   border-bottom: 1px solid #3f3f3b;
@@ -426,16 +628,15 @@ a.release-arrow:focus-visible img {
 }
 
 .lyrics-modal__body {
-  display: grid;
-  grid-template-columns: minmax(0, 760px) auto;
-  gap: clamp(36px, 7vw, 110px);
-  align-items: start;
-  width: min(calc(100% - 48px), 1040px);
-  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  padding-inline: max(24px, calc((100vw - 1040px) / 2));
 }
 
 .lyrics-modal__content {
-  width: 100%;
+  width: min(100%, 760px);
   margin: 0;
   padding: clamp(62px, 10vw, 132px) 0 140px;
 }
@@ -516,18 +717,17 @@ html[lang="ru"] .lyrics-modal__text {
 }
 
 .lyrics-modal__pager {
-  position: sticky;
+  position: absolute;
   z-index: 3;
-  top: calc(50vh - 24px);
+  right: clamp(24px, 24vw, 420px);
+  bottom: clamp(24px, 5vh, 48px);
   display: flex;
-  gap: 6px;
-  align-self: start;
-  margin-top: clamp(80px, 16vh, 170px);
+  gap: 4px;
 }
 
 .lyrics-modal__pager button {
   display: grid;
-  width: 48px;
+  width: 34px;
   aspect-ratio: 1;
   place-items: center;
   border: 1px solid var(--color-foreground);
@@ -634,6 +834,10 @@ html[lang="ru"] .lyrics-modal__text {
   border-top: 1px solid #555550;
 }
 
+.services-section {
+  scroll-margin-top: 78px;
+}
+
 .service-link {
   position: relative;
   display: grid;
@@ -643,9 +847,10 @@ html[lang="ru"] .lyrics-modal__text {
   border-right: 1px solid #555550;
   border-bottom: 1px solid #555550;
   background: transparent;
-  color: var(--color-foreground);
+  color: var(--color-muted);
   text-align: left;
   text-decoration: none;
+  transition: background 160ms ease, color 160ms ease;
 }
 
 .service-link:nth-child(even) {
@@ -663,13 +868,42 @@ html[lang="ru"] .lyrics-modal__text {
   color: var(--color-muted);
   font-size: 0.58rem;
   letter-spacing: 0.12em;
+  transition: color 160ms ease;
 }
 
-.service-link b {
+.outbound-arrow {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  flex: none;
+  transform: rotate(-135deg);
+}
+
+.service-link__arrow {
   position: absolute;
   top: 25px;
   right: 25px;
-  color: var(--color-muted);
+  filter: invert(1);
+  opacity: 0.65;
+  transition: opacity 160ms ease;
+}
+
+.service-link:hover,
+.service-link:focus-visible {
+  background: rgba(240, 240, 234, 0.035);
+  color: var(--color-foreground);
+  outline: none;
+}
+
+.service-link:hover small,
+.service-link:focus-visible small {
+  color: var(--color-foreground);
+}
+
+.service-link:hover .service-link__arrow,
+.service-link:focus-visible .service-link__arrow {
+  opacity: 1;
 }
 
 .site-footer {
@@ -684,18 +918,32 @@ html[lang="ru"] .lyrics-modal__text {
   color: #090909;
 }
 
-.site-footer p {
-  margin: 0 0 12px;
-  font-family: "Dela Gothic One", sans-serif;
-  font-size: clamp(2rem, 5vw, 5rem);
-  letter-spacing: -0.055em;
-  line-height: 0.9;
+.site-footer__brand {
+  display: inline-flex;
+  gap: clamp(12px, 1.6vw, 22px);
+  align-items: center;
+  font-family: "Dot Gothic 16", monospace;
+  font-size: clamp(1.5rem, 3.2vw, 3.2rem);
+  letter-spacing: 0.055em;
+  line-height: 1;
 }
 
-.site-footer span {
+.site-footer__brand img {
+  width: clamp(44px, 5vw, 74px);
+  height: auto;
+}
+
+.site-footer__copyright,
+.site-footer__socials span,
+.site-footer__socials a {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.1em;
+}
+
+.site-footer__copyright {
+  display: block;
+  margin-top: 18px;
 }
 
 .site-footer__socials {
@@ -703,6 +951,23 @@ html[lang="ru"] .lyrics-modal__text {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 22px;
+}
+
+.site-footer__socials a,
+.site-footer__socials span {
+  text-transform: uppercase;
+}
+
+.site-footer__socials a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 160ms ease;
+}
+
+.site-footer__socials a:hover,
+.site-footer__socials a:focus-visible {
+  opacity: 0.55;
 }
 
 @media (max-width: 760px) {
@@ -749,6 +1014,10 @@ html[lang="ru"] .lyrics-modal__text {
     font-size: clamp(2.1rem, 13vw, 4.6rem);
   }
 
+  .release-hero__heading--stacked h1 {
+    font-size: clamp(2.1rem, 11vw, 4.6rem);
+  }
+
   .experience {
     min-height: calc(100svh - 68px);
   }
@@ -792,6 +1061,18 @@ html[lang="ru"] .lyrics-modal__text {
     bottom: 18px;
   }
 
+  .release-hero__listen {
+    bottom: 18px;
+    left: 18px;
+    gap: 8px;
+    font-size: 0.68rem;
+  }
+
+  .release-hero__listen img {
+    width: 26px;
+    height: 26px;
+  }
+
   .lyrics-modal__topbar {
     padding: 18px;
   }
@@ -802,10 +1083,8 @@ html[lang="ru"] .lyrics-modal__text {
   }
 
   .lyrics-modal__body {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    width: calc(100% - 40px);
+    width: 100%;
+    padding-inline: 20px;
   }
 
   .lyrics-modal__content h2 {
@@ -815,12 +1094,12 @@ html[lang="ru"] .lyrics-modal__text {
 
   .lyrics-modal__pager {
     top: 72px;
-    order: -1;
-    justify-content: flex-end;
-    width: 100%;
-    margin: 0 0 -72px;
-    padding: 12px 0;
-    background: linear-gradient(180deg, rgba(5, 5, 5, 0.96), rgba(5, 5, 5, 0));
+    right: 20px;
+    bottom: auto;
+  }
+
+  .lyrics-modal__pager button {
+    width: 44px;
   }
 
   .content-section {
@@ -866,6 +1145,18 @@ html[lang="ru"] .lyrics-modal__text {
 
   .site-footer__socials {
     justify-content: flex-start;
+  }
+
+  .age-gate {
+    padding: 14px;
+  }
+
+  .age-gate__panel {
+    padding: 28px 22px;
+  }
+
+  .age-gate__actions {
+    grid-template-columns: 1fr;
   }
 }
 

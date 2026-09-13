@@ -15,6 +15,26 @@ type Props = {
 
 const { title, description, lang, theme } = Astro.props;
 const themeStyle = `--color-background:${theme.background};--color-foreground:${theme.foreground};--color-muted:${theme.muted};--color-accent:${theme.accent}`;
+const ageGateCopy =
+  lang === "ru"
+    ? {
+        eyebrow: "МАТЕРИАЛЫ 18+",
+        title: "ВАМ УЖЕ ЕСТЬ 18 ЛЕТ?",
+        description: "На сайте представлены материалы с возрастным ограничением 18+.",
+        accept: "ДА, МНЕ ЕСТЬ 18",
+        deny: "НЕТ",
+        deniedTitle: "ДОСТУП ОГРАНИЧЕН",
+        deniedDescription: "Этот сайт предназначен только для совершеннолетних пользователей.",
+      }
+    : {
+        eyebrow: "18+ CONTENT",
+        title: "ARE YOU 18 OR OLDER?",
+        description: "This website contains material intended for adults.",
+        accept: "YES, I AM 18+",
+        deny: "NO",
+        deniedTitle: "ACCESS RESTRICTED",
+        deniedDescription: "This website is intended for adults only.",
+      };
 ---
 
 <!doctype html>
@@ -40,7 +60,82 @@ const themeStyle = `--color-background:${theme.background};--color-foreground:${
     />
     <title>{title}</title>
   </head>
-  <body style={themeStyle}>
-    <slot />
+  <body class="age-gate-open" style={themeStyle}>
+    <div
+      class="age-gate"
+      data-age-gate
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="age-gate-title"
+      aria-describedby="age-gate-description"
+    >
+      <div class="age-gate__panel">
+        <div data-age-gate-prompt>
+          <span class="age-gate__eyebrow">{ageGateCopy.eyebrow}</span>
+          <strong class="age-gate__mark" aria-hidden="true">18+</strong>
+          <h1 id="age-gate-title">{ageGateCopy.title}</h1>
+          <p id="age-gate-description">{ageGateCopy.description}</p>
+          <div class="age-gate__actions">
+            <button type="button" data-age-gate-accept>{ageGateCopy.accept}</button>
+            <button type="button" data-age-gate-deny>{ageGateCopy.deny}</button>
+          </div>
+        </div>
+
+        <div class="age-gate__denied" data-age-gate-denied hidden>
+          <strong class="age-gate__mark" aria-hidden="true">18+</strong>
+          <h2 tabindex="-1" data-age-gate-denied-title>{ageGateCopy.deniedTitle}</h2>
+          <p>{ageGateCopy.deniedDescription}</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-site-content inert>
+      <slot />
+    </div>
+
+    <script is:inline>
+      (() => {
+        const storageKey = "nihilist3000-age-confirmed";
+        const gate = document.querySelector("[data-age-gate]");
+        const siteContent = document.querySelector("[data-site-content]");
+        const prompt = document.querySelector("[data-age-gate-prompt]");
+        const denied = document.querySelector("[data-age-gate-denied]");
+        const acceptButton = document.querySelector("[data-age-gate-accept]");
+        const denyButton = document.querySelector("[data-age-gate-deny]");
+        const deniedTitle = document.querySelector("[data-age-gate-denied-title]");
+
+        const enterSite = () => {
+          gate?.setAttribute("hidden", "");
+          siteContent?.removeAttribute("inert");
+          document.body.classList.remove("age-gate-open");
+        };
+
+        try {
+          if (sessionStorage.getItem(storageKey) === "true") {
+            enterSite();
+            return;
+          }
+        } catch {
+          // The gate still works when browser storage is unavailable.
+        }
+
+        requestAnimationFrame(() => acceptButton?.focus());
+
+        acceptButton?.addEventListener("click", () => {
+          try {
+            sessionStorage.setItem(storageKey, "true");
+          } catch {
+            // Continue without remembering the choice for this session.
+          }
+          enterSite();
+        });
+
+        denyButton?.addEventListener("click", () => {
+          if (prompt instanceof HTMLElement) prompt.hidden = true;
+          if (denied instanceof HTMLElement) denied.hidden = false;
+          if (deniedTitle instanceof HTMLElement) deniedTitle.focus();
+        });
+      })();
+    </script>
   </body>
 </html>

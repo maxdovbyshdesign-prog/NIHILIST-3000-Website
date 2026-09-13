@@ -46,11 +46,7 @@ const description = `${release.artist} — ${copy.title}`;
         >
           <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
         </a>
-      ) : (
-        <span class="release-arrow release-arrow--previous is-disabled" aria-hidden="true">
-          <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
-        </span>
-      )
+      ) : null
     }
     {
       neighbors.next ? (
@@ -62,8 +58,17 @@ const description = `${release.artist} — ${copy.title}`;
           <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
         </a>
       ) : (
-        <span class="release-arrow release-arrow--next is-disabled" aria-hidden="true">
-          <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+        <span
+          class="release-arrow release-arrow--next release-arrow--teaser"
+          role="note"
+          tabindex="0"
+          aria-label={copy.nextReleaseTeaser.replace("\n", " ")}
+        >
+          <img class="release-arrow__icon" src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+          <span class="release-arrow__preview" aria-hidden="true">
+            <img src="/assets/ui/next-release-mark.png" alt="" width="2000" height="2000" />
+            <span>{copy.nextReleaseTeaser}</span>
+          </span>
         </span>
       )
     }
@@ -72,14 +77,20 @@ const description = `${release.artist} — ${copy.title}`;
   <main>
     <section class="release-hero" style={`--release-cover: url('${release.cover}')`}>
       <div class="release-hero__grain"></div>
-      <div class="release-hero__heading">
+      <div class:list={["release-hero__heading", { "release-hero__heading--stacked": Boolean(copy.heroTitle) }]}>
         <p>{copy.eyebrow}</p>
-        <h1>{copy.title}</h1>
+        <h1>{copy.heroTitle ?? copy.title}</h1>
       </div>
+      <a class="release-hero__listen" href="#listen">
+        <img src="/assets/ui/listen-headphones.png" alt="" width="2000" height="2000" />
+        <span>{copy.servicesLabel}</span>
+      </a>
       <ReleaseExperience
         client:load
         modelUrl={release.model}
         textureUrl={release.envelopeTexture}
+        paperTextureUrls={release.paperTextures[lang as Language]}
+        sounds={release.interactionSounds}
         tracks={copy.tracks}
         hint={copy.interactionHint}
         closeText={copy.closeText}
@@ -111,7 +122,7 @@ const description = `${release.artist} — ${copy.title}`;
       }
     </section>
 
-    <section class="content-section services-section" aria-labelledby="services-title">
+    <section id="listen" class="content-section services-section" aria-labelledby="services-title">
       <div class="section-heading">
         <span>02</span>
         <h2 id="services-title">{copy.servicesLabel}</h2>
@@ -126,7 +137,7 @@ const description = `${release.artist} — ${copy.title}`;
           >
             <span>{service.name}</span>
             <small>{copy.servicesPending}</small>
-            <b>↗</b>
+            <img class="service-link__arrow outbound-arrow" src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
           </a>
         ))}
       </div>
@@ -134,12 +145,26 @@ const description = `${release.artist} — ${copy.title}`;
   </main>
 
   <footer class="site-footer">
-    <div>
-      <p>NIHILIST3000</p>
-      <span>© {new Date().getFullYear()}</span>
+    <div class="site-footer__identity">
+      <a class="site-footer__brand" href={`/${lang}/releases/${release.slug}`} aria-label="NIHILIST3000 home">
+        <img src="/assets/ui/nihilist-mark.png" alt="" width="4000" height="4000" />
+        <span>NIHILIST3000</span>
+      </a>
+      <span class="site-footer__copyright">© {new Date().getFullYear()}</span>
     </div>
     <div class="site-footer__socials" aria-label={copy.socialsLabel}>
-      {release.socials.map((social) => <span>{social} ↗</span>)}
+      {release.socials.map((social) => social.url ? (
+        <a
+          href={social.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {social.name}
+          <img class="outbound-arrow" src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+        </a>
+      ) : (
+        <span>{social.name}</span>
+      ))}
     </div>
   </footer>
 

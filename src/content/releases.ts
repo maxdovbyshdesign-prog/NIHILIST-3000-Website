@@ -9,12 +9,14 @@ export type Track = {
 
 export type ReleaseCopy = {
   title: string;
+  heroTitle?: string;
   eyebrow: string;
   interactionHint: string;
   openText: string;
   closeText: string;
   previousRelease: string;
   nextRelease: string;
+  nextReleaseTeaser: string;
   videoLabel: string;
   videoPending: string;
   servicesLabel: string;
@@ -29,13 +31,21 @@ export type Release = {
   experience: "envelope";
   model: string;
   envelopeTexture: string;
+  paperTextures: Record<Language, string[]>;
+  interactionSounds: {
+    open: string;
+    pageSwitch: [string, string];
+  };
   cover: string;
   videoId: string | null;
   services: Array<{
     name: string;
     url: string;
   }>;
-  socials: string[];
+  socials: Array<{
+    name: string;
+    url: string | null;
+  }>;
   theme: {
     background: string;
     foreground: string;
@@ -50,124 +60,124 @@ const ruTracks: Track[] = [
     id: "face-crack",
     number: "01",
     title: "Трещина лица",
-    lyrics: `Это не гимн
-Просто трещина лица
-мне пробило грудь штырём
-тормозного рычага
+    lyrics: `Это не гимн,
+просто трещина лица.
+Мне пробило грудь штырём
+тормозного рычага.
 
-Я лежу и жду тебя
-в глазах сплошная рябь
-Вместо титров ерудна
-Порно и еда
+Я лежу и жду тебя,
+в глазах сплошная рябь.
+Вместо титров — ерунда:
+порно и еда.
 
 Трое суток без сна
-В ожидании тепла
+в ожидании тепла.
 
-Мир горит за окном
-Глотку сушит стеклом
-Но зато без бинокля вс видно
-и этот финал я не пропущу
+Мир горит за окном,
+глотку сушит стеклом.
+Но зато без бинокля всё видно,
+и этот финал я не пропущу.
 
-Это не гимн
-Просто трещина лица
-мне пробило грудь штырём
-тормозного рычага
+Это не гимн,
+просто трещина лица.
+Мне пробило грудь штырём
+тормозного рычага.
 
-Я лежу и жду тебя
-в глазах сплошная рябь
-Вместо титров ерудно
-Порно и еда`,
+Я лежу и жду тебя,
+в глазах сплошная рябь.
+Вместо титров — ерунда:
+порно и еда.`,
   },
   {
     id: "kemet-time",
     number: "02",
     title: "Пора в Кемет",
-    lyrics: `Запах заправок мягкий бетон
-что то опять не то с головой
-Твоя миниюбка мне слишком мала
-добавь в масло немного огня
-Кубрик жив и снимает как я
-высаживаюсь на планету земля
-с января до января
-без выходных
-без тебя
+    lyrics: `Запах заправок, мягкий бетон.
+Что-то опять не то с головой.
+Твоя мини-юбка мне слишком мала.
+Добавь в масло немного огня.
+Кубрик жив и снимает, как я
+высаживаюсь на планету Земля
+с января до января,
+без выходных,
+без тебя.
 
-а в голове веснааааааа
+А в голове веснааааааа.
 
-урны наполнены слизью газет
-их пытается поджечь
+Урны наполнены слизью газет.
+Их пытается поджечь
 отставной мент
-в попытке согрется
-дымит сигаретой
-пока ещё клыкастый рот
-пыткой бесконечной льются со стен
-воспоминания
+в попытке согреться.
+Дымит сигаретой,
+пока ещё клыкастый рот.
+Пыткой бесконечной льются со стен
+воспоминания,
 звуки
-и прочий бред
-без состраданий
-выпью их все
-Кажется снова пора в Кемет`,
+и прочий бред.
+Без состраданий
+выпью их все.
+Кажется, снова пора в Кемет.`,
   },
   {
     id: "joyful-casualty-count",
     number: "03",
     title: "Радостный подсчёт потерь",
-    lyrics: `Стригу ногти возле вокзала
-на поезд последний почти успевая
-вам все желаю сдохнуть здесь поскорей
-мне достанется радостный подсчёт потерь
+    lyrics: `Стригу ногти возле вокзала,
+на поезд последний почти успевая.
+Вам всем желаю сдохнуть здесь поскорей:
+мне достанется радостный подсчёт потерь.
 
-в самом центре тьмы
-сразу после чумы
-наблюдаю чужие огни
-бессовесто скалясь от понимания
-этот поезд отправился в ад
-и в этом никто не виноват
-Краска стекает с лица
-как всегда
-это ничего это ерунда
+В самом центре тьмы,
+сразу после чумы,
+наблюдаю чужие огни,
+бессовестно скалясь от понимания:
+этот поезд отправился в ад,
+и в этом никто не виноват.
+Краска стекает с лица,
+как всегда.
+Это ничего, это ерунда.
 
-Из Кемета в Дешрет (×3)
-жаль что не на скорой
+Из Кемета в Дешрет (×3),
+жаль, что не на скорой.
 
-Я стану архагелом
-в предсмертном бреду и я вам такого
-там нашепчу
-сожалеть будут все засранцы
-о каждом упущенном шансе
-каждой слезой что я слышал
-умоется пьянь за окном
-пусть штопают руки и плачут
-хватая зубами стоп кран
-хлор смешан со скипидаром
-вообщем то как и всегд
+Я стану архангелом
+в предсмертном бреду, и я вам такого
+там нашепчу.
+Сожалеть будут все засранцы
+о каждом упущенном шансе.
+Каждой слезой, что я слышал,
+умоется пьянь за окном.
+Пусть штопают руки и плачут,
+хватая зубами стоп-кран.
+Хлор смешан со скипидаром,
+в общем-то, как и всегда.
 
-Из Кемета в Дешрет (×3)
-жаль что не на скорой`,
+Из Кемета в Дешрет (×3),
+жаль, что не на скорой.`,
   },
   {
     id: "lullaby-for-a-cat",
     number: "04",
     title: "Колыбель для кошки",
-    lyrics: `Те кто остались в последнем вагоне
-уже не доедут до нас
-лучше бы было им ждать на перроне
-ведь с рельс он слетит через час
+    lyrics: `Те, кто остались в последнем вагоне,
+уже не доедут до нас.
+Лучше бы было им ждать на перроне,
+ведь с рельс он слетит через час.
 
-Если дождёждшься рассветных лучей
+Если дождёшься рассветных лучей,
 то от скверны отчистит тебя
 тихое утро
-суботтнегго мерзкого липкого нового дня
+субботнего мерзкого липкого нового дня.
 
-если не знать что остался один
-то тебе будет ведь всё равно
-молча как мантру себе повторяй
-никому никогда ничего
-но если ты всё же захочешь вернуться
-лезь через окно
+Если не знать, что остался один,
+то тебе будет ведь всё равно.
+Молча, как мантру, себе повторяй:
+«Никому, никогда, ничего».
+Но если ты всё же захочешь вернуться,
+лезь через окно,
 завесь зеркала
-и разбей все часы
-ведь теперь это снова твой дом`,
+и разбей все часы,
+ведь теперь это снова твой дом.`,
   },
 ];
 
@@ -175,118 +185,118 @@ const enTracks: Track[] = [
   {
     id: "face-crack",
     number: "01",
-    title: "Facecrack",
+    title: "Face Crack",
     lyrics: `This is not an anthem.
-Just a crack over my face
+Just a crack over my face.
 A brake lever pin has pierced my chest.
 
-Lying here waiting for you.
+Lying here, waiting for you.
 My vision is a blur.
 Boring junk instead of credits —
-Porn and food.
+porn and food.
 
-Three days with no sleep
-Waiting for warmth.
+Three days with no sleep,
+waiting for warmth.
 
-Outside the window, world’s burning
+Outside the window, the world’s burning.
 My throat is dry from the glass.
-At least, no need for binoculars.
+At least there’s no need for binoculars.
 No way I’ll miss the finale.
 
 This is not an anthem.
-Just a crack over my face
+Just a crack over my face.
 A brake lever pin has pierced my chest.
 
-Lying here waiting for you.
+Lying here, waiting for you.
 My vision is a blur.
 Boring junk instead of credits —
-Porn and food.`,
+porn and food.`,
   },
   {
     id: "kemet-time",
     number: "02",
     title: "Kemet Time",
-    lyrics: `Gas station odor, soft concrete
-Once again, my head is not right
-Your mini skirt’s too small for me
-Add a bit of fire to the oil
+    lyrics: `Gas station odor, soft concrete.
+Once again, my head is not right.
+Your mini-skirt’s too small for me.
+Add a bit of fire to the oil.
 Kubrick’s alive, he’s blocking a scene
-Of me landing on Planet Earth
-From January to January
-Without days off
-Without you.
+of me landing on Planet Earth
+from January to January,
+without days off,
+without you.
 
-Springtime in my head
+Springtime in my head.
 
-Trashcans are filled with newspaper slime
-A retired cop tries to set them on fire
-Wanting to keep warm, puffing a cig
-A mouth that still has a fang or two left
-Endlessly torturing, dripping from walls
-Memories, sounds, all that dumb stuff
+Trash cans are filled with newspaper slime.
+A retired cop tries to set them on fire,
+wanting to keep warm, puffing a cig.
+A mouth that still has a fang or two left.
+Endlessly torturing, dripping from walls:
+memories, sounds, all that dumb stuff.
 Without compassion —
-Drinking it all
-I guess, it’s Kemet time again!`,
+drinking it all.
+I guess it’s Kemet time again!`,
   },
   {
     id: "joyful-casualty-count",
     number: "03",
     title: "Joyful Casualty Count",
-    lyrics: `At the train station, clipping my nails
-Almost making it to the last express
-Wishing you all to die here fast
-I’ll get the joyful casualty count
+    lyrics: `At the train station, clipping my nails,
+almost making it to the last express.
+Wishing you all to die here fast:
+I’ll get the joyful casualty count.
 
 In the heart of darkness,
-Right after the plague
-I’m observing alien lights
-Shamelessly grinning, I know for a fact —
-This train is headed for hell
-Nobody at all to blame for this
-Paint dripping from my face, as always
+right after the plague,
+I’m observing alien lights,
+shamelessly grinning. I know for a fact —
+this train is headed for hell.
+Nobody at all to blame for this.
+Paint dripping from my face, as always.
 It’s whatever, it’s nothing.
 
-From Kemet to Deshret (×3)
-Pity it ain’t in an ambulance
+From Kemet to Deshret (×3).
+Pity it ain’t in an ambulance.
 
-I’ll become an archangel
-Rambling at death’s door
+I’ll become an archangel,
+rambling at death’s door.
 Oh, the things I’d whisper to you!
 Every asshole’s gonna be sorry
-For every chance they missed
+for every chance they missed.
 Drunkards outside will shower
-With every teardrop I’ve heard
+with every teardrop I’ve heard.
 Let them mend their hands and cry,
-Biting down on the emergency brake.
-Chlorine is mixed with turpentine
-Just like they always do
+biting down on the emergency brake.
+Chlorine is mixed with turpentine,
+just like they always do.
 
-From Kemet to Deshret (×3)
-Pity it ain’t in an ambulance`,
+From Kemet to Deshret (×3).
+Pity it ain’t in an ambulance.`,
   },
   {
     id: "lullaby-for-a-cat",
     number: "04",
-    title: "Train Car / Carriage",
+    title: "Cat's Cradle",
     lyrics: `Those who stayed in the last car
-Won’t make it to us anymore
-Should have stayed at the platform
-It’s gonna go off the rails in an hour
+won’t make it to us anymore.
+Should have stayed at the platform:
+it’s gonna go off the rails in an hour.
 
-If you stick it out till sundawn
-It will cleanse you from filth
-A quiet morning
-Of a grimy, sticky, new Saturday
+If you stick it out till dawn,
+it will cleanse you from filth —
+a quiet morning
+of a grimy, sticky, new Saturday.
 
-If you don’t know that you’re left all alone
-Then you wouldn’t care at all
-Repeat this mantra to yourself in silence
-“No one, never, nothing”
-But if you actually want to return
-Climb through the window
-Cover the mirrors
-Break all the clocks,
-Cause this is your home again.`,
+If you don’t know that you’re left all alone,
+then you wouldn’t care at all.
+Repeat this mantra to yourself in silence:
+“No one, never, nothing.”
+But if you actually want to return,
+climb through the window,
+cover the mirrors,
+break all the clocks,
+’cause this is your home again.`,
   },
 ];
 
@@ -297,8 +307,29 @@ export const releases: Release[] = [
     experience: "envelope",
     model: "/assets/releases/tvar-zhret-tvar/envelope.glb",
     envelopeTexture: "/assets/releases/tvar-zhret-tvar/envelope-texture.jpg",
+    paperTextures: {
+      ru: [
+        "/assets/releases/tvar-zhret-tvar/papers/01-face-crack-ru.png",
+        "/assets/releases/tvar-zhret-tvar/papers/02-kemet-time-ru.png",
+        "/assets/releases/tvar-zhret-tvar/papers/03-joyful-casualty-count-ru.png",
+        "/assets/releases/tvar-zhret-tvar/papers/04-cat-cradle-ru.png",
+      ],
+      en: [
+        "/assets/releases/tvar-zhret-tvar/papers/01-face-crack-en.png",
+        "/assets/releases/tvar-zhret-tvar/papers/02-kemet-time-en.png",
+        "/assets/releases/tvar-zhret-tvar/papers/03-joyful-casualty-count-en.png",
+        "/assets/releases/tvar-zhret-tvar/papers/04-cat-cradle-en.png",
+      ],
+    },
+    interactionSounds: {
+      open: "/assets/releases/tvar-zhret-tvar/audio/envelope-open.mp3",
+      pageSwitch: [
+        "/assets/releases/tvar-zhret-tvar/audio/page-switch-1.mp3",
+        "/assets/releases/tvar-zhret-tvar/audio/page-switch-2.mp3",
+      ],
+    },
     cover: "/assets/releases/tvar-zhret-tvar/cover.jpg",
-    videoId: null,
+    videoId: "IhU_7qBFUfs",
     services: [
       {
         name: "Spotify",
@@ -317,7 +348,20 @@ export const releases: Release[] = [
         url: "https://nihilist3000.bandcamp.com/album/-",
       },
     ],
-    socials: ["Telegram", "YouTube", "Instagram"],
+    socials: [
+      {
+        name: "nihilist3000@icloud.com",
+        url: null,
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/nihilist3000",
+      },
+      {
+        name: "Instagram",
+        url: "https://www.instagram.com/nihilist3000/",
+      },
+    ],
     theme: {
       background: "#050505",
       foreground: "#f0f0ea",
@@ -333,6 +377,7 @@ export const releases: Release[] = [
         closeText: "ЗАКРЫТЬ",
         previousRelease: "ПРЕДЫДУЩИЙ РЕЛИЗ",
         nextRelease: "СЛЕДУЮЩИЙ РЕЛИЗ",
+        nextReleaseTeaser: "На край осени\nскоро",
         videoLabel: "ВИДЕО",
         videoPending: "ССЫЛКА НА ВИДЕО ПОЯВИТСЯ ЗДЕСЬ",
         servicesLabel: "СЛУШАТЬ",
@@ -341,13 +386,15 @@ export const releases: Release[] = [
         tracks: ruTracks,
       },
       en: {
-        title: "ТВАРЬ ЖРЁТ ТВАРЬ",
+        title: "BEAST FEEDS ON BEAST",
+        heroTitle: "BEAST\nFEEDS ON\nBEAST",
         eyebrow: "EP / 4 LYRICS",
         interactionHint: "HOVER · PICK A PAGE · OPEN",
         openText: "READ LYRICS",
         closeText: "CLOSE",
         previousRelease: "PREVIOUS RELEASE",
         nextRelease: "NEXT RELEASE",
+        nextReleaseTeaser: "To the edge of autumn,\ncoming soon",
         videoLabel: "VIDEO",
         videoPending: "THE VIDEO LINK WILL APPEAR HERE",
         servicesLabel: "LISTEN",

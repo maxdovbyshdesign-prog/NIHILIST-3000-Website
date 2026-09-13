@@ -1,5 +1,5 @@
 import { Canvas, type ThreeEvent, useFrame, useLoader } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ACESFilmicToneMapping,
   BufferAttribute,
@@ -7,23 +7,24 @@ import {
   DoubleSide,
   EdgesGeometry,
   Group,
-  CanvasTexture,
   LineBasicMaterial,
   LineSegments,
   MathUtils,
   Mesh,
   MeshStandardMaterial,
   Object3D,
-  RepeatWrapping,
   SRGBColorSpace,
   TextureLoader,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { Track } from "../content/releases";
+import { useRetroEnvelopeAudio, type EnvelopeSoundUrls } from "./useRetroEnvelopeAudio";
 
 type Props = {
   modelUrl: string;
   textureUrl: string;
+  paperTextureUrls: string[];
+  sounds: EnvelopeSoundUrls;
   tracks: Track[];
   hint: string;
   closeText: string;
@@ -32,7 +33,7 @@ type Props = {
 type EnvelopeProps = {
   modelUrl: string;
   textureUrl: string;
-  tracks: Track[];
+  paperTextureUrls: string[];
   desktopLayout: boolean;
   open: boolean;
   activeTrack: number | null;
@@ -84,7 +85,7 @@ function applyEnvelopeAtlasUv(mesh: Mesh, region: "body" | "valve") {
 function EnvelopeModel({
   modelUrl,
   textureUrl,
-  tracks,
+  paperTextureUrls,
   desktopLayout,
   open,
   activeTrack,
@@ -95,6 +96,7 @@ function EnvelopeModel({
 }: EnvelopeProps) {
   const gltf = useLoader(GLTFLoader, modelUrl);
   const envelopeTexture = useLoader(TextureLoader, textureUrl);
+  const paperTextures = useLoader(TextureLoader, paperTextureUrls);
   const interactiveGroup = useRef<Group>(null);
   const drag = useRef({
     active: false,
@@ -107,6 +109,7 @@ function EnvelopeModel({
   });
   const rotationTarget = useRef({ x: 0, y: 0 });
   const paperPressStartedOpen = useRef(false);
+  const foldProgress = useRef(0);
 
   const scene = useMemo(() => {
     const clone = gltf.scene.clone(true);
@@ -117,6 +120,7 @@ function EnvelopeModel({
   }, [gltf.scene]);
   const body = useMemo(() => scene.getObjectByName("body") as Mesh | null, [scene]);
   const valve = useMemo(() => scene.getObjectByName("valve") as Mesh | null, [scene]);
+  const valvePivotZ = useMemo(() => valve?.position.z ?? 0, [valve]);
   const paperTemplate = useMemo(
     () => scene.getObjectByName("paper") as Mesh | null,
     [scene],
@@ -150,16 +154,19 @@ function EnvelopeModel({
   );
   const paperMaterials = useMemo(
     () =>
-      ["#f0f0e9", "#d8d8d1", "#c1c1bb", "#aaaaa4"].map(
-        (color) =>
+      paperTextures.map(
+        (texture) =>
           new MeshStandardMaterial({
-            color,
+            color: "#ffffff",
             roughness: 0.98,
             metalness: 0,
+            map: texture,
+            transparent: true,
+            alphaTest: 0.02,
             side: DoubleSide,
           }),
       ),
-    [],
+    [paperTextures],
   );
 
   const paperCopies = useMemo(() => {
@@ -180,6 +187,15 @@ function EnvelopeModel({
     envelopeTexture.wrapT = ClampToEdgeWrapping;
     envelopeTexture.needsUpdate = true;
 
+    paperTextures.forEach((texture) => {
+      texture.colorSpace = SRGBColorSpace;
+      texture.wrapS = ClampToEdgeWrapping;
+      texture.wrapT = ClampToEdgeWrapping;
+      texture.repeat.set(1 / 0.8881596326828003, -1);
+      texture.offset.set(0, 1);
+      texture.needsUpdate = true;
+    });
+
     if (body) {
       applyEnvelopeAtlasUv(body, "body");
       body.material = envelopeMaterial;
@@ -192,65 +208,14 @@ function EnvelopeModel({
       valve.material = valveMaterial;
       valve.rotation.x = 2.55;
       valve.rotation.z = Math.PI;
+      valve.position.z = valvePivotZ;
       valve.castShadow = true;
       valve.receiveShadow = true;
     }
     if (paperTemplate) paperTemplate.visible = false;
-
-    const paperTextures: CanvasTexture[] = [];
-    paperMaterials.forEach((material, index) => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 576;
-      const context = canvas.getContext("2d");
-      if (!context) return;
-
-      const backgrounds = ["#f0f0e9", "#d8d8d1", "#c1c1bb", "#aaaaa4"];
-      context.fillStyle = backgrounds[index % backgrounds.length];
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.translate(canvas.width, canvas.height);
-      context.rotate(Math.PI);
-      context.fillStyle = "#151514";
-      context.textBaseline = "top";
-      context.font = '700 18px Arial, sans-serif';
-      context.letterSpacing = "3px";
-      context.fillText("NIHILIST3000", 38, 36);
-      context.font = '700 104px Arial, sans-serif';
-      context.fillText(tracks[index]?.number ?? String(index + 1).padStart(2, "0"), 32, 86);
-
-      const title = tracks[index]?.title ?? "";
-      const words = title.split(/\s+/);
-      const lines: string[] = [];
-      let line = "";
-      context.font = '700 42px "Dela Gothic One", Arial, sans-serif';
-      words.forEach((word) => {
-        const candidate = line ? `${line} ${word}` : word;
-        if (context.measureText(candidate).width > 430 && line) {
-          lines.push(line);
-          line = word;
-        } else {
-          line = candidate;
-        }
-      });
-      if (line) lines.push(line);
-      lines.slice(0, 3).forEach((titleLine, lineIndex) => {
-        context.fillText(titleLine, 38, 390 + lineIndex * 54);
-      });
-
-      const texture = new CanvasTexture(canvas);
-      texture.colorSpace = SRGBColorSpace;
-      texture.wrapS = RepeatWrapping;
-      texture.repeat.x = -1;
-      texture.offset.x = 1;
-      material.color.set("#ffffff");
-      material.map = texture;
-      material.needsUpdate = true;
-      const paper = paperCopies[index];
-      if (paper) {
-        paper.castShadow = true;
-        paper.receiveShadow = true;
-      }
-      paperTextures.push(texture);
+    paperCopies.forEach((paper) => {
+      paper.castShadow = true;
+      paper.receiveShadow = true;
     });
 
     const outlines: LineSegments[] = [];
@@ -276,16 +241,17 @@ function EnvelopeModel({
       envelopeMaterial.dispose();
       valveMaterial.dispose();
       paperMaterials.forEach((material) => material.dispose());
-      paperTextures.forEach((texture) => texture.dispose());
       outlines.forEach((outline) => {
         outline.parent?.remove(outline);
         outline.geometry.dispose();
         (outline.material as LineBasicMaterial).dispose();
       });
     };
-  }, [body, envelopeMaterial, envelopeTexture, paperCopies, paperMaterials, paperTemplate, scene, valve, valveMaterial]);
+  }, [body, envelopeMaterial, envelopeTexture, paperCopies, paperMaterials, paperTemplate, paperTextures, scene, valve, valveMaterial, valvePivotZ]);
 
   useFrame((_, delta) => {
+    foldProgress.current = damp(foldProgress.current, open ? 1 : 0, 8, delta);
+    const paperOpacity = open ? 1 : MathUtils.smoothstep(foldProgress.current, 0.05, 0.22);
     const group = interactiveGroup.current;
     if (group) {
       group.rotation.x = damp(group.rotation.x, rotationTarget.current.x, 8, delta);
@@ -294,16 +260,23 @@ function EnvelopeModel({
 
     if (valve) {
       valve.rotation.x = damp(valve.rotation.x, open ? 0 : 2.55, 9, delta);
+      // The open flap needs a slight overlap; keep the original hinge when shut.
+      const unfolded = 1 - MathUtils.smoothstep(valve.rotation.x, 0, 2.55);
+      valve.position.z = valvePivotZ + 0.005 * unfolded;
+      valve.castShadow = valve.rotation.x > 0.12;
     }
 
     paperCopies.forEach((paper, index) => {
+      paperMaterials[index].opacity = paperOpacity;
+      paper.visible = paperOpacity > 0.02;
+      paper.castShadow = paperOpacity > 0.1;
       const isActive = activeTrack === index;
       const fan = index - (paperCopies.length - 1) / 2;
       const desktopPaperOffset = desktopLayout ? 0.014 : 0;
       const targetRise = open
-        ? (isActive ? -0.045 : -0.018 - index * 0.004) + desktopPaperOffset
+        ? (isActive ? -0.028 : -0.001 - index * 0.004) + desktopPaperOffset
         : 0;
-      const targetX = open ? fan * 0.028 : 0;
+      const targetX = open ? fan * (desktopLayout ? 0.048 : 0.034) : 0;
       const targetDepth = open ? 0.018 + index * 0.004 + (isActive ? 0.045 : 0) : -0.012;
       const targetRotation = open ? (isActive ? 0 : fan * -0.075) : 0;
 
@@ -457,6 +430,8 @@ function InteractiveLyrics({ lyrics }: { lyrics: string }) {
 export default function ReleaseExperience({
   modelUrl,
   textureUrl,
+  paperTextureUrls,
+  sounds,
   tracks,
   hint,
   closeText,
@@ -465,8 +440,39 @@ export default function ReleaseExperience({
   const [pinnedOpen, setPinnedOpen] = useState(false);
   const [activeTrack, setActiveTrack] = useState<number | null>(null);
   const [modalTrack, setModalTrack] = useState<number | null>(null);
+  const modalBodyRef = useRef<HTMLDivElement>(null);
   const [desktopLayout, setDesktopLayout] = useState(false);
   const open = pinnedOpen || hovered;
+  const playSound = useRetroEnvelopeAudio(sounds);
+  const openSoundPlayed = useRef(false);
+  const openSoundRequestedAt = useRef(-Infinity);
+  const lastPageSelection = useRef<number | null>(null);
+  const lastPageSoundPlayed = useRef<number | null>(null);
+  const pageSoundRequestedAt = useRef(-Infinity);
+
+  const playOpeningSound = useCallback(() => {
+    if (openSoundPlayed.current || performance.now() - openSoundRequestedAt.current < 120) return;
+    openSoundRequestedAt.current = performance.now();
+    playSound("open", () => { openSoundPlayed.current = true; });
+  }, [playSound]);
+
+  const playPageSound = useCallback((index: number) => {
+    const changed = lastPageSelection.current !== index;
+    lastPageSelection.current = index;
+    if (!changed && lastPageSoundPlayed.current === index) return;
+    if (performance.now() - pageSoundRequestedAt.current < 110) return;
+    pageSoundRequestedAt.current = performance.now();
+    playSound(Math.random() < 0.5 ? "page-1" : "page-2", () => {
+      lastPageSoundPlayed.current = index;
+    });
+  }, [playSound]);
+
+  useEffect(() => {
+    if (open) return;
+    openSoundPlayed.current = false;
+    lastPageSelection.current = null;
+    lastPageSoundPlayed.current = null;
+  }, [open]);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 761px)");
@@ -481,15 +487,19 @@ export default function ReleaseExperience({
     setHovered(false);
     setPinnedOpen(false);
     setActiveTrack(null);
+    lastPageSelection.current = null;
+    lastPageSoundPlayed.current = null;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setModalTrack(null);
       if (event.key === "ArrowRight") {
-        setModalTrack((value) => (value === null ? null : (value + 1) % tracks.length));
+        const next = (modalTrack + 1) % tracks.length;
+        playPageSound(next);
+        setModalTrack(next);
       }
       if (event.key === "ArrowLeft") {
-        setModalTrack((value) =>
-          value === null ? null : (value - 1 + tracks.length) % tracks.length,
-        );
+        const next = (modalTrack - 1 + tracks.length) % tracks.length;
+        playPageSound(next);
+        setModalTrack(next);
       }
     };
     document.body.classList.add("lyrics-open");
@@ -498,9 +508,13 @@ export default function ReleaseExperience({
       document.body.classList.remove("lyrics-open");
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [modalTrack, tracks.length]);
+  }, [modalTrack, tracks.length, playPageSound]);
 
   const selectedTrack = modalTrack === null ? null : tracks[modalTrack];
+
+  useEffect(() => {
+    if (modalTrack !== null && modalBodyRef.current) modalBodyRef.current.scrollTop = 0;
+  }, [modalTrack]);
 
   return (
     <div className={`experience ${open ? "is-open" : ""}`}>
@@ -510,7 +524,11 @@ export default function ReleaseExperience({
         onPointerLeave={(event) => {
           if (event.pointerType !== "mouse") return;
           setHovered(false);
-          if (!pinnedOpen) setActiveTrack(null);
+          if (!pinnedOpen) {
+            setActiveTrack(null);
+            lastPageSelection.current = null;
+            lastPageSoundPlayed.current = null;
+          }
         }}
       >
         <Canvas
@@ -559,16 +577,26 @@ export default function ReleaseExperience({
             <EnvelopeModel
               modelUrl={modelUrl}
               textureUrl={textureUrl}
-              tracks={tracks}
+              paperTextureUrls={paperTextureUrls}
               desktopLayout={desktopLayout}
               open={open}
               activeTrack={activeTrack}
-              onEnvelopeEnter={() => setHovered(true)}
-              onToggleOpen={() => setPinnedOpen((value) => !value)}
-              onPaperHover={setActiveTrack}
+              onEnvelopeEnter={() => {
+                if (!open) playOpeningSound();
+                setHovered(true);
+              }}
+              onToggleOpen={() => {
+                if (!pinnedOpen) playOpeningSound();
+                setPinnedOpen((value) => !value);
+              }}
+              onPaperHover={(index) => {
+                setActiveTrack(index);
+                playPageSound(index);
+              }}
               onPaperClick={(index) => {
                 setPinnedOpen(true);
                 setActiveTrack(index);
+                playPageSound(index);
                 setModalTrack(index);
               }}
             />
@@ -580,7 +608,10 @@ export default function ReleaseExperience({
 
       <div className="sr-only" aria-label="Track selection">
         {tracks.map((track, index) => (
-          <button type="button" key={track.id} onClick={() => setModalTrack(index)}>
+          <button type="button" key={track.id} onClick={() => {
+            playPageSound(index);
+            setModalTrack(index);
+          }}>
             {track.number} {track.title}
           </button>
         ))}
@@ -594,22 +625,30 @@ export default function ReleaseExperience({
               {closeText} ×
             </button>
           </div>
-          <div className="lyrics-modal__body">
+          <div className="lyrics-modal__body" ref={modalBodyRef}>
             <article className="lyrics-modal__content">
               <p>NIHILIST3000</p>
               <h2 id="lyrics-title">{selectedTrack.title}</h2>
               <InteractiveLyrics lyrics={selectedTrack.lyrics} />
             </article>
-            <div className="lyrics-modal__pager">
-              <button type="button" onClick={() => setModalTrack((value) => value === null ? 0 : (value - 1 + tracks.length) % tracks.length)}>
-                <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
-                <span className="sr-only">←</span>
-              </button>
-              <button type="button" onClick={() => setModalTrack((value) => value === null ? 0 : (value + 1) % tracks.length)}>
-                <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
-                <span className="sr-only">→</span>
-              </button>
-            </div>
+          </div>
+          <div className="lyrics-modal__pager">
+            <button type="button" onClick={() => {
+              const next = modalTrack === null ? 0 : (modalTrack - 1 + tracks.length) % tracks.length;
+              playPageSound(next);
+              setModalTrack(next);
+            }}>
+              <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+              <span className="sr-only">←</span>
+            </button>
+            <button type="button" onClick={() => {
+              const next = modalTrack === null ? 0 : (modalTrack + 1) % tracks.length;
+              playPageSound(next);
+              setModalTrack(next);
+            }}>
+              <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
+              <span className="sr-only">→</span>
+            </button>
           </div>
         </div>
       )}
