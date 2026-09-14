@@ -200,8 +200,6 @@ a {
   padding: 16px 28px;
   border-bottom: 1px solid color-mix(in srgb, var(--color-foreground) 42%, transparent);
   background: #050505;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   font-family: "Dela Gothic One", sans-serif;
   letter-spacing: 0.02em;
 }
