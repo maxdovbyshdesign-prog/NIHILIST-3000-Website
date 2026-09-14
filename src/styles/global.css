@@ -998,6 +998,18 @@ html[lang="ru"] .lyrics-modal__text {
 }
 
 @media (min-width: 761px) and (max-width: 1100px) {
+  .site-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .site-header__release {
+    display: none;
+  }
+
+  .release-hero {
+    min-height: max(100svh, 900px);
+  }
+
   .release-hero__heading {
     top: max(108px, calc(78px + env(safe-area-inset-top) + 26px));
     left: 32px;
@@ -1005,22 +1017,35 @@ html[lang="ru"] .lyrics-modal__text {
   }
 
   .release-hero__heading h1 {
-    font-size: clamp(3rem, 6vw, 5rem);
+    max-width: 6.5em;
+    font-size: clamp(4rem, 9vw, 6.3rem);
   }
 
   .release-hero__heading--stacked h1 {
-    font-size: clamp(2.7rem, 5vw, 4.5rem);
+    font-size: clamp(3.8rem, 8vw, 5.8rem);
+  }
+
+  .experience {
+    min-height: max(calc(100svh - 78px), 822px);
   }
 
   .experience__canvas {
-    top: 61%;
-    left: 62%;
-    width: min(62vw, 640px);
-    height: min(62svh, 640px);
+    top: 58%;
+    left: 50%;
+    width: min(82vw, 840px);
+    height: min(75svh, 760px);
+    translate: -50% -43%;
   }
 
   .experience__hint {
-    top: 120px;
+    top: 320px;
+    right: 32px;
+    bottom: auto;
+    text-align: right;
+  }
+
+  .release-hero__listen {
+    left: 32px;
   }
 
   .content-section {

@@ -36,6 +36,7 @@ type EnvelopeProps = {
   textureUrl: string;
   paperTextureUrls: string[];
   desktopLayout: boolean;
+  tabletLayout: boolean;
   open: boolean;
   activeTrack: number | null;
   onEnvelopeEnter: () => void;
@@ -89,6 +90,7 @@ function EnvelopeModel({
   textureUrl,
   paperTextureUrls,
   desktopLayout,
+  tabletLayout,
   open,
   activeTrack,
   onEnvelopeEnter,
@@ -348,7 +350,7 @@ function EnvelopeModel({
   return (
     <group
       position={desktopLayout ? [0.13, 0.03, 0] : [0, -0.08, 0]}
-      scale={desktopLayout ? 4.44 : 3.7}
+      scale={desktopLayout ? 4.44 : tabletLayout ? 4.2 : 3.7}
     >
       <group rotation={[Math.PI / 2, 0, 0]}>
         <group
@@ -463,6 +465,7 @@ export default function ReleaseExperience({
   const [modalTrack, setModalTrack] = useState<number | null>(null);
   const modalBodyRef = useRef<HTMLDivElement>(null);
   const [desktopLayout, setDesktopLayout] = useState(false);
+  const [tabletLayout, setTabletLayout] = useState(false);
   const open = pinnedOpen || hovered;
   const playSound = useRetroEnvelopeAudio(sounds);
   const openSoundPlayed = useRef(false);
@@ -497,10 +500,18 @@ export default function ReleaseExperience({
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 1101px)");
-    const syncDesktopLayout = () => setDesktopLayout(desktopQuery.matches);
-    syncDesktopLayout();
-    desktopQuery.addEventListener("change", syncDesktopLayout);
-    return () => desktopQuery.removeEventListener("change", syncDesktopLayout);
+    const tabletQuery = window.matchMedia("(min-width: 761px) and (max-width: 1100px)");
+    const syncLayout = () => {
+      setDesktopLayout(desktopQuery.matches);
+      setTabletLayout(tabletQuery.matches);
+    };
+    syncLayout();
+    desktopQuery.addEventListener("change", syncLayout);
+    tabletQuery.addEventListener("change", syncLayout);
+    return () => {
+      desktopQuery.removeEventListener("change", syncLayout);
+      tabletQuery.removeEventListener("change", syncLayout);
+    };
   }, []);
 
   useEffect(() => {
@@ -600,6 +611,7 @@ export default function ReleaseExperience({
               textureUrl={textureUrl}
               paperTextureUrls={paperTextureUrls}
               desktopLayout={desktopLayout}
+              tabletLayout={tabletLayout}
               open={open}
               activeTrack={activeTrack}
               onEnvelopeEnter={() => {
