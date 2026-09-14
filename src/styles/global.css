@@ -206,14 +206,14 @@ a {
   letter-spacing: 0.02em;
 }
 
-.site-header::before {
-  position: absolute;
-  right: 0;
-  bottom: 100%;
+.site-header__top-cover {
+  position: fixed;
+  z-index: 99;
+  top: calc(-220px - env(safe-area-inset-top));
   left: 0;
-  height: max(100px, env(safe-area-inset-top));
+  width: 100%;
+  height: calc(222px + env(safe-area-inset-top));
   background: #050505;
-  content: "";
   pointer-events: none;
 }
 
