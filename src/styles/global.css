@@ -204,17 +204,6 @@ a {
   letter-spacing: 0.02em;
 }
 
-.site-header__top-cover {
-  position: fixed;
-  z-index: 99;
-  top: calc(-220px - env(safe-area-inset-top));
-  left: 0;
-  width: 100%;
-  height: calc(222px + env(safe-area-inset-top));
-  background: #050505;
-  pointer-events: none;
-}
-
 .site-header__brand {
   display: inline-flex;
   gap: 10px;
@@ -1268,8 +1257,37 @@ html[lang="ru"] .lyrics-modal__text {
   }
 }
 
+/* On touch WebKit the browser chrome can show the root page above a fixed
+   header. Keep the root stationary and clip scrolling to the viewport. */
+@supports (-webkit-touch-callout: none) {
+  @media (hover: none), (pointer: coarse) {
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .release-page-scroll {
+      position: fixed;
+      inset: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      background: var(--color-background);
+    }
+
+    body.age-gate-open .release-page-scroll,
+    body.lyrics-open .release-page-scroll {
+      overflow: hidden;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  html {
+  html,
+  .release-page-scroll {
     scroll-behavior: auto;
   }
 

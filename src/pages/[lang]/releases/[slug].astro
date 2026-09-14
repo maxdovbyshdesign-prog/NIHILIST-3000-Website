@@ -20,7 +20,6 @@ const description = `${release.artist} — ${copy.title}`;
 ---
 
 <SiteLayout title={`${release.artist} — ${copy.title}`} description={description} lang={lang} theme={release.theme}>
-  <div class="site-header__top-cover" aria-hidden="true"></div>
   <header class="site-header">
     <a class="site-header__brand" href={`/${lang}/releases/${release.slug}`} aria-label="NIHILIST3000 home">
       <img src="/assets/ui/nihilist-mark.png" alt="" width="4000" height="4000" />
@@ -75,6 +74,7 @@ const description = `${release.artist} — ${copy.title}`;
     }
   </nav>
 
+  <div class="release-page-scroll">
   <main>
     <section class="release-hero" style={`--release-cover: url('${release.cover}')`}>
       <div class="release-hero__grain"></div>
@@ -169,6 +169,7 @@ const description = `${release.artist} — ${copy.title}`;
       ))}
     </div>
   </footer>
+  </div>
 
   <script>
     const teaser = document.querySelector<HTMLButtonElement>(".release-arrow--teaser");
