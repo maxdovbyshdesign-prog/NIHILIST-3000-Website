@@ -12,6 +12,7 @@ export type ReleaseCopy = {
   heroTitle?: string;
   eyebrow: string;
   interactionHint: string;
+  touchInteractionHint: string;
   openText: string;
   closeText: string;
   previousRelease: string;
@@ -373,6 +374,7 @@ export const releases: Release[] = [
         title: "ТВАРЬ ЖРЁТ ТВАРЬ",
         eyebrow: "EP / 4 ТЕКСТА",
         interactionHint: "НАВЕДИ · ВЫБЕРИ ЛИСТ · ОТКРОЙ",
+        touchInteractionHint: "ТКНИ / ВЫБЕРИ / ПРОЧИТАЙ",
         openText: "ОТКРЫТЬ ТЕКСТ",
         closeText: "ЗАКРЫТЬ",
         previousRelease: "ПРЕДЫДУЩИЙ РЕЛИЗ",
@@ -390,6 +392,7 @@ export const releases: Release[] = [
         heroTitle: "BEAST\nFEEDS ON\nBEAST",
         eyebrow: "EP / 4 LYRICS",
         interactionHint: "HOVER · PICK A PAGE · OPEN",
+        touchInteractionHint: "TAP / SELECT / READ",
         openText: "READ LYRICS",
         closeText: "CLOSE",
         previousRelease: "PREVIOUS RELEASE",

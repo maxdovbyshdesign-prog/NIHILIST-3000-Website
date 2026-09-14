@@ -27,6 +27,7 @@ type Props = {
   sounds: EnvelopeSoundUrls;
   tracks: Track[];
   hint: string;
+  touchHint: string;
   closeText: string;
 };
 
@@ -41,6 +42,7 @@ type EnvelopeProps = {
   onToggleOpen: () => void;
   onPaperHover: (index: number) => void;
   onPaperClick: (index: number) => void;
+  onPaperTap: (index: number) => void;
 };
 
 function damp(current: number, target: number, speed: number, delta: number) {
@@ -93,6 +95,7 @@ function EnvelopeModel({
   onToggleOpen,
   onPaperHover,
   onPaperClick,
+  onPaperTap,
 }: EnvelopeProps) {
   const gltf = useLoader(GLTFLoader, modelUrl);
   const envelopeTexture = useLoader(TextureLoader, textureUrl);
@@ -102,6 +105,9 @@ function EnvelopeModel({
     active: false,
     moved: false,
     pointerId: -1,
+    paperIndex: null as number | null,
+    startedOpen: false,
+    pointerType: "mouse",
     startX: 0,
     startY: 0,
     rotationX: 0,
@@ -109,6 +115,7 @@ function EnvelopeModel({
   });
   const rotationTarget = useRef({ x: 0, y: 0 });
   const paperPressStartedOpen = useRef(false);
+  const lastPointerWasTouch = useRef(false);
   const foldProgress = useRef(0);
 
   const scene = useMemo(() => {
@@ -294,18 +301,24 @@ function EnvelopeModel({
     drag.current.active = true;
     drag.current.moved = false;
     drag.current.pointerId = event.pointerId;
+    drag.current.pointerType = event.pointerType;
+    drag.current.startedOpen = open;
+    drag.current.paperIndex = paperCopies.indexOf(event.object as Mesh);
+    if (drag.current.paperIndex < 0) drag.current.paperIndex = null;
+    lastPointerWasTouch.current = event.pointerType !== "mouse";
     drag.current.startX = event.clientX;
     drag.current.startY = event.clientY;
     drag.current.rotationX = rotationTarget.current.x;
     drag.current.rotationY = rotationTarget.current.y;
-    (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
+    if (event.pointerType === "mouse") (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
   };
 
   const onPointerMove = (event: ThreeEvent<PointerEvent>) => {
     if (!drag.current.active || drag.current.pointerId !== event.pointerId) return;
     const deltaX = event.clientX - drag.current.startX;
     const deltaY = event.clientY - drag.current.startY;
-    if (Math.abs(deltaX) + Math.abs(deltaY) > 4) drag.current.moved = true;
+    if (Math.hypot(deltaX, deltaY) > (drag.current.pointerType === "mouse" ? 4 : 10)) drag.current.moved = true;
+    if (drag.current.pointerType !== "mouse") return;
     rotationTarget.current.y = MathUtils.clamp(
       drag.current.rotationY + deltaX * 0.006,
       -0.72,
@@ -319,10 +332,17 @@ function EnvelopeModel({
   };
 
   const onPointerUp = (event: ThreeEvent<PointerEvent>) => {
-    if (!drag.current.active) return;
-    if (!drag.current.moved) onToggleOpen();
+    if (!drag.current.active || drag.current.pointerId !== event.pointerId) return;
+    if (Math.hypot(event.clientX - drag.current.startX, event.clientY - drag.current.startY) > 10) drag.current.moved = true;
+    if (!drag.current.moved) {
+      if (drag.current.pointerType !== "mouse" && drag.current.startedOpen && drag.current.paperIndex !== null) {
+        onPaperTap(drag.current.paperIndex);
+      } else if (drag.current.paperIndex === null || drag.current.pointerType !== "mouse") {
+        onToggleOpen();
+      }
+    }
     drag.current.active = false;
-    (event.target as HTMLElement).releasePointerCapture?.(event.pointerId);
+    if (drag.current.pointerType === "mouse") (event.target as HTMLElement).releasePointerCapture?.(event.pointerId);
   };
 
   return (
@@ -360,16 +380,16 @@ function EnvelopeModel({
               key={paper.name}
               object={paper as Object3D}
               onPointerEnter={(event: ThreeEvent<PointerEvent>) => {
-                if (!open) return;
+                if (!open || event.pointerType !== "mouse") return;
                 event.stopPropagation();
                 onPaperHover(paperCopies.indexOf(paper));
               }}
               onPointerDown={(event: ThreeEvent<PointerEvent>) => {
                 paperPressStartedOpen.current = open;
-                if (open) event.stopPropagation();
+                if (open && event.pointerType === "mouse") event.stopPropagation();
               }}
               onClick={(event: ThreeEvent<MouseEvent>) => {
-                if (!paperPressStartedOpen.current) return;
+                if (!paperPressStartedOpen.current || lastPointerWasTouch.current) return;
                 event.stopPropagation();
                 onPaperClick(paperCopies.indexOf(paper));
               }}
@@ -434,6 +454,7 @@ export default function ReleaseExperience({
   sounds,
   tracks,
   hint,
+  touchHint,
   closeText,
 }: Props) {
   const [hovered, setHovered] = useState(false);
@@ -475,7 +496,7 @@ export default function ReleaseExperience({
   }, [open]);
 
   useEffect(() => {
-    const desktopQuery = window.matchMedia("(min-width: 761px)");
+    const desktopQuery = window.matchMedia("(min-width: 1101px)");
     const syncDesktopLayout = () => setDesktopLayout(desktopQuery.matches);
     syncDesktopLayout();
     desktopQuery.addEventListener("change", syncDesktopLayout);
@@ -599,12 +620,21 @@ export default function ReleaseExperience({
                 playPageSound(index);
                 setModalTrack(index);
               }}
+              onPaperTap={(index) => {
+                if (activeTrack === index) {
+                  setModalTrack(index);
+                } else {
+                  setActiveTrack(index);
+                  playPageSound(index);
+                }
+              }}
             />
           </Suspense>
         </Canvas>
       </div>
 
-      <p className="experience__hint">{hint}</p>
+      <p className="experience__hint experience__hint--mouse">{hint}</p>
+      <p className="experience__hint experience__hint--touch">{touchHint}</p>
 
       <div className="sr-only" aria-label="Track selection">
         {tracks.map((track, index) => (

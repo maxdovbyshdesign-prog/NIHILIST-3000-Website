@@ -58,10 +58,10 @@ const description = `${release.artist} — ${copy.title}`;
           <img src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
         </a>
       ) : (
-        <span
+        <button
+          type="button"
           class="release-arrow release-arrow--next release-arrow--teaser"
-          role="note"
-          tabindex="0"
+          aria-expanded="false"
           aria-label={copy.nextReleaseTeaser.replace("\n", " ")}
         >
           <img class="release-arrow__icon" src="/assets/ui/release-arrow.png" alt="" width="2105" height="2000" />
@@ -69,7 +69,7 @@ const description = `${release.artist} — ${copy.title}`;
             <img src="/assets/ui/next-release-mark.png" alt="" width="2000" height="2000" />
             <span>{copy.nextReleaseTeaser}</span>
           </span>
-        </span>
+        </button>
       )
     }
   </nav>
@@ -93,6 +93,7 @@ const description = `${release.artist} — ${copy.title}`;
         sounds={release.interactionSounds}
         tracks={copy.tracks}
         hint={copy.interactionHint}
+        touchHint={copy.touchInteractionHint}
         closeText={copy.closeText}
       />
       <span class="release-hero__index">001 / {String(releases.length).padStart(3, "0")}</span>
@@ -169,6 +170,25 @@ const description = `${release.artist} — ${copy.title}`;
   </footer>
 
   <script>
+    const teaser = document.querySelector<HTMLButtonElement>(".release-arrow--teaser");
+    teaser?.addEventListener("click", () => {
+      const expanded = teaser.classList.toggle("is-active");
+      teaser.setAttribute("aria-expanded", String(expanded));
+    });
+    document.addEventListener("pointerdown", (event) => {
+      if (teaser && !teaser.contains(event.target as Node)) {
+        teaser.classList.remove("is-active");
+        teaser.setAttribute("aria-expanded", "false");
+        teaser.blur();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && teaser) {
+        teaser.classList.remove("is-active");
+        teaser.setAttribute("aria-expanded", "false");
+        teaser.blur();
+      }
+    });
     document.querySelectorAll<HTMLElement>("[data-language-choice]").forEach((link) => {
       link.addEventListener("click", () => {
         const language = link.dataset.languageChoice;
